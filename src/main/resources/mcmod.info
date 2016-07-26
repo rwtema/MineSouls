@@ -1,0 +1,16 @@
+[
+{
+  "modid": "minesouls",
+  "name": "MineSouls",
+  "description": "Prepare to Mine!",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["RWTema Dude"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
