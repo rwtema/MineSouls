@@ -9,8 +9,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.FoodStats;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
@@ -21,11 +28,27 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class PlayerHandlerRegistry {
 	public static final PlayerHandlerRegistry INSTANCE = new PlayerHandlerRegistry();
+	public static final ResourceLocation RESOURCE_LOCATION = new ResourceLocation(MineSouls.MODID, "PlayerHandler");
 	public static Map<FoodStats, EntityPlayer> foodStatOwners = new MapMaker().weakKeys().weakValues().makeMap();
+	@CapabilityInject(PlayerHandler.class)
+	public static Capability<PlayerHandler> capability = null;
 	Map<EntityPlayer, PlayerHandler> handlers = new MapMaker().weakKeys().makeMap();
 
 	public static void init() {
 		MinecraftForge.EVENT_BUS.register(INSTANCE);
+		CapabilityManager.INSTANCE.register(PlayerHandler.class, new Capability.IStorage<PlayerHandler>() {
+					@Override
+					public NBTBase writeNBT(Capability<PlayerHandler> capability, PlayerHandler instance, EnumFacing side) {
+						return null;
+					}
+
+					@Override
+					public void readNBT(Capability<PlayerHandler> capability, PlayerHandler instance, EnumFacing side, NBTBase nbt) {
+
+					}
+				},
+				PlayerHandler.class
+		);
 	}
 
 	@Nullable
@@ -72,6 +95,13 @@ public class PlayerHandlerRegistry {
 	public void tick(TickEvent.PlayerTickEvent event) {
 		if (MineSouls.isMineSoulsOnServer() && event.phase == TickEvent.Phase.START)
 			getPlayerHandler(event.player).tick();
+	}
+
+	@SubscribeEvent
+	public void onConstruct(AttachCapabilitiesEvent.Entity event) {
+		if (event.getEntity() instanceof EntityPlayer) {
+			event.addCapability(RESOURCE_LOCATION, getPlayerHandler((EntityPlayer) event.getEntity()));
+		}
 	}
 
 	@SubscribeEvent

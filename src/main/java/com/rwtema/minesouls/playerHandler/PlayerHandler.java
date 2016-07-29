@@ -4,6 +4,7 @@ import com.rwtema.minesouls.Helper;
 import com.rwtema.minesouls.config.DifficultyConfig;
 import com.rwtema.minesouls.network.MessagePlayerHandlerStats;
 import com.rwtema.minesouls.network.NetworkHandler;
+import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -11,15 +12,20 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class PlayerHandler {
+public class PlayerHandler implements INBTSerializable<NBTTagCompound>, ICapabilityProvider {
 
 	public final EntityPlayer player;
 	public int enduranceCooldown = 0;
@@ -238,4 +244,34 @@ public class PlayerHandler {
 		wasPressingLeftClick = pressingLeftClick;
 	}
 
+	@Override
+	public NBTTagCompound serializeNBT() {
+		NBTTagCompound nbt = new NBTTagCompound();
+		nbt.setInteger("enduranceCooldown", enduranceCooldown);
+		nbt.setInteger("poiseCooldown", poiseCooldown);
+		nbt.setFloat("endurance", endurance);
+		nbt.setFloat("poise", poise);
+		nbt.setInteger("staggeredTimer", staggeredTimer);
+		return nbt;
+	}
+
+	@Override
+	public void deserializeNBT(NBTTagCompound nbt) {
+		enduranceCooldown = nbt.getInteger("enduranceCooldown");
+		poiseCooldown = nbt.getInteger("poiseCooldown");
+		staggeredTimer = nbt.getInteger("staggeredTimer");
+		poise = nbt.getFloat("poise");
+		endurance = nbt.getFloat("endurance");
+		dirty = true;
+	}
+
+	@Override
+	public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
+		return capability == PlayerHandlerRegistry.capability;
+	}
+
+	@Override
+	public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
+		return capability == PlayerHandlerRegistry.capability ? PlayerHandlerRegistry.capability.cast(this) : null;
+	}
 }
