@@ -29,8 +29,6 @@ public class PlayerHandler {
 	public int staggeredTimer = 0;
 	boolean dirty = false;
 
-	int dodgeRoll = 0;
-
 	boolean wasPressingLeftClick;
 
 
@@ -41,7 +39,7 @@ public class PlayerHandler {
 
 	public void onJump() {
 		endurance -= DifficultyConfig.ENDURANCE_COST_PER_JUMP;
-		enduranceCooldown = (int) Math.max(enduranceCooldown, DifficultyConfig.ENDURANCE_COST_PER_JUMP / DifficultyConfig.ENDURANCE_GAIN_REGULAR);
+		enduranceCooldown = (int) Math.max(enduranceCooldown, DifficultyConfig.ENDURANCE_COST_PER_JUMP / DifficultyConfig.ENDURANCE_COOLDOWN_ATTACKJUMP_MODIFIER);
 		dirty = true;
 		checkEndurance();
 	}
@@ -51,7 +49,7 @@ public class PlayerHandler {
 			event.setCanceled(true);
 		} else {
 			endurance -= DifficultyConfig.ENDURANCE_COST_PER_ATTACK;
-			enduranceCooldown = (int) Math.max(enduranceCooldown, DifficultyConfig.ENDURANCE_COST_PER_ATTACK / DifficultyConfig.ENDURANCE_GAIN_REGULAR);
+			enduranceCooldown = (int) Math.max(enduranceCooldown, DifficultyConfig.ENDURANCE_COST_PER_ATTACK / DifficultyConfig.ENDURANCE_COOLDOWN_ATTACKJUMP_MODIFIER);
 			dirty = true;
 			checkEndurance();
 		}
@@ -81,14 +79,19 @@ public class PlayerHandler {
 			staggeredTimer--;
 		}
 
+		if(endurance <= 0){
+			player.setSprinting(false);
+		}
+
 		if (enduranceCooldown > 0) {
 			enduranceCooldown--;
 			if (enduranceCooldown <= 0) {
 				enduranceCooldown = 0;
-				endurance = DifficultyConfig.ENDURANCE_REGAIN_FROM_ZERO;
+				endurance = Math.max(endurance, DifficultyConfig.ENDURANCE_REGAIN_FROM_ZERO);
 			}
 
-			player.setSprinting(false);
+
+
 		} else {
 			if (player.isSprinting()) {
 				if (endurance > 0) dirty = true;

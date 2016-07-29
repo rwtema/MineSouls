@@ -12,7 +12,8 @@ public class DifficultyConfig {
 	public static float ENDURANCE_COST_PER_JUMP = 10 / 4F;
 	public static float ENDURANCE_REGAIN_FROM_ZERO = 5;
 	public static float ENDURANCE_LOSS_SPRINTING = 1.5F / 4F;
-	public static float ENDURANCE_GAIN_REGULAR = 14 / 4F;
+	public static float ENDURANCE_GAIN_REGULAR = 12 / 4F;
+	public static float ENDURANCE_COOLDOWN_ATTACKJUMP_MODIFIER = 3F;
 	public static float ENDURANCE_GAIN_REDUCED = 3F / 4F;
 	public static float NO_ENDURANCE_DAMAGE_MODIFIER = 1.5F;
 	public static float STAGGER_DAMAGE_MODIFIER = 2F;
