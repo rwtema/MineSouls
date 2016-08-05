@@ -14,7 +14,9 @@ import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGameOver;
+import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
@@ -45,6 +47,7 @@ public class HUDHandler {
 	List<ScrollBar> scrollBars;
 	Set<RenderGameOverlayEvent.ElementType> preventDrawing;
 	int time = 0;
+	private int cur_armor_height = 0;
 
 	{
 		scrollBars = ImmutableList.<ScrollBar>builder()
@@ -97,7 +100,7 @@ public class HUDHandler {
 					@Override
 					public float getCurrentValue(EntityPlayer player, PlayerHandler handler) {
 						if (player.getHealth() <= 0) return 0;
-						if(!MineSouls.isMineSoulsOnServer())
+						if (!MineSouls.isMineSoulsOnServer())
 							return getMaxValue(player, handler);
 
 						if (handler.staggeredTimer > 0) return 0;
@@ -211,37 +214,17 @@ public class HUDHandler {
 
 	@SubscribeEvent
 	public void hudDraw(RenderGameOverlayEvent.Post event) {
-
 		if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) return;
 
 		Minecraft mc = Minecraft.getMinecraft();
 		EntityPlayerSP thePlayer = mc.thePlayer;
 		if (thePlayer == null || thePlayer.capabilities.isCreativeMode) return;
 		GuiIngameForge hud = (GuiIngameForge) mc.ingameGUI;
-		ScaledResolution resolution = event.getResolution();
 
 		if (PersonalConfig.OLD_SCHOOL_GUI) {
 			if (!MineSouls.isMineSoulsOnServer()) return;
 
-			GlStateManager.enableBlend();
-			GlStateManager.pushMatrix();
-			{
-				GlStateManager.scale(PersonalConfig.GUI_SCALE, PersonalConfig.GUI_SCALE, 1);
-
-				mc.getTextureManager().bindTexture(GUI_TEXTURE);
-
-				int x = 1 + 5;
-				int y = 1 + 5;
-				for (ScrollBar scrollBar : scrollBars) {
-					if (scrollBar.type == null && scrollBar.shouldRender) {
-						scrollBar.render(hud, x, y);
-						y += scrollBar.TEX_HEIGHT + 1;
-					}
-				}
-				GlStateManager.color(1, 1, 1);
-			}
-			GlStateManager.popMatrix();
-			GlStateManager.disableBlend();
+			renderEndurance(mc, hud, thePlayer);
 
 		} else {
 			boolean guiLeftSide = PersonalConfig.GUI_LEFT_SIDE;
@@ -268,6 +251,71 @@ public class HUDHandler {
 			GlStateManager.popMatrix();
 			GlStateManager.disableBlend();
 		}
+	}
+
+	@SubscribeEvent
+	public void armorDrawPre(RenderGameOverlayEvent.Pre event) {
+		if (event.getType() == RenderGameOverlayEvent.ElementType.ARMOR)
+			cur_armor_height = GuiIngameForge.left_height;
+	}
+
+	@SubscribeEvent
+	public void armorDrawPos(RenderGameOverlayEvent.Post event) {
+		if (event.getType() == RenderGameOverlayEvent.ElementType.ARMOR && PersonalConfig.OLD_SCHOOL_GUI && MineSouls.isMineSoulsOnServer()) {
+			Minecraft mc = Minecraft.getMinecraft();
+			ScaledResolution res = new ScaledResolution(mc);
+			GlStateManager.enableBlend();
+			int left = res.getScaledWidth() / 2 - 91;
+			int top = res.getScaledHeight() - cur_armor_height;
+			mc.getTextureManager().bindTexture(GUI_TEXTURE);
+
+			PlayerHandler handler = PlayerHandlerRegistry.INSTANCE.getPlayerHandler(mc.thePlayer);
+
+			float poiseLevel = handler.poise / handler.getPoiseBreakPoint();
+			int level = Math.round(ForgeHooks.getTotalArmorValue(mc.thePlayer) * (poiseLevel));
+
+			int offset = handler.staggeredTimer > 0 ? 18 : 0;
+
+			for (int i = 1; level > 0 && i < 20; i += 2) {
+				GuiIngame hud = mc.ingameGUI;
+				if (i < level) {
+					hud.drawTexturedModalRect(left, top, offset + 9, 30, 9, 9);
+				} else if (i == level) {
+					hud.drawTexturedModalRect(left, top, offset, 30, 9, 9);
+				}
+				left += 8;
+			}
+
+			GlStateManager.disableBlend();
+			mc.getTextureManager().bindTexture(Gui.ICONS);
+		}
+	}
+
+	private void renderEndurance(Minecraft mc, GuiIngameForge hud, EntityPlayerSP thePlayer) {
+		mc.getTextureManager().bindTexture(GUI_TEXTURE);
+		ScaledResolution resolution = new ScaledResolution(mc);
+		GlStateManager.enableBlend();
+		int left = resolution.getScaledWidth() / 2 + 91;
+		int top = resolution.getScaledHeight() - GuiIngameForge.right_height;
+		GuiIngameForge.right_height += 10;
+
+		PlayerHandler handler = PlayerHandlerRegistry.INSTANCE.getPlayerHandler(thePlayer);
+
+		int level = Math.round((handler.endurance / DifficultyConfig.MAX_ENDURANCE) * 20);
+
+		for (int i = 0; i < 10; ++i) {
+			int idx = i * 2 + 1;
+			int x = left - (9 - i) * 8 - 9;
+			int y = top + 1;
+
+			if (idx < level)
+				hud.drawTexturedModalRect(x, y, 8, 23, 8, 7);
+			else if (idx == level)
+				hud.drawTexturedModalRect(x, y, 16, 23, 8, 7);
+			else
+				hud.drawTexturedModalRect(x, y, 0, 23, 8, 7);
+		}
+		GlStateManager.disableBlend();
 	}
 
 	public void renderExperience(Minecraft mc, EntityPlayerSP thePlayer, GuiIngameForge hud, int base_x, int base_y) {
