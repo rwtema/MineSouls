@@ -25,7 +25,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class MineSoulsControllerHooks {
 	public static boolean shouldSlowPlayer(EntityPlayer player) {
 		if (!MineSouls.isMineSoulsOnServer()) return player.isHandActive();
-		return isPlayerUsingButNotBlocking(player) || PlayerHandlerRegistry.INSTANCE.getPlayerHandler(player).staggeredTimer > DifficultyConfig.STAGGER_SLOW_TIME;
+		return isPlayerUsingButNotBlocking(player) || PlayerHandlerRegistry.INSTANCE.getPlayerHandler(player).staggeredTimer > 0;
 	}
 
 	public static boolean isPlayerUsingOrHoldingSword(EntityPlayer player) {

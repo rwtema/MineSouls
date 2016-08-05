@@ -2,12 +2,11 @@ package com.rwtema.minesouls.config;
 
 public class DifficultyConfig {
 
-	public static int STAGGER_SLOW_TIME = 20;
 	public static int MAX_ENDURANCE = 200;
 	public static int EMPTY_ENDURANCE_COOLDOWN = 20;
 	public static float BLOCKING_ENDURANCE_MODIFIER = 50F;
 	public static int POISE_COOLDOWN = 4 * 20;
-	public static int STAGGER_TIME = 3 * 20;
+	public static int STAGGER_TIME = 30;
 	public static float ENDURANCE_COST_PER_ATTACK = 40;
 	public static float ENDURANCE_COST_PER_JUMP = 10 / 4F;
 	public static float ENDURANCE_REGAIN_FROM_ZERO = 5;
