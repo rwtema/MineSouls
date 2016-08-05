@@ -83,6 +83,9 @@ public class PlayerHandler implements INBTSerializable<NBTTagCompound>, ICapabil
 			player.resetCooldown();
 			player.setSprinting(false);
 			staggeredTimer--;
+			if(staggeredTimer == 0){
+				dirty = true;
+			}
 		}
 
 		if(endurance <= 0){
