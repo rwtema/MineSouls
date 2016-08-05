@@ -250,6 +250,7 @@ public class HUDHandler {
 			}
 			GlStateManager.popMatrix();
 			GlStateManager.disableBlend();
+			mc.getTextureManager().bindTexture(Gui.ICONS);
 		}
 	}
 
