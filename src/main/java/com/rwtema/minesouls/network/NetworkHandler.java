@@ -19,6 +19,7 @@ public class NetworkHandler {
 
 	public static void init() {
 		network.registerMessage(handler, MessagePlayerHandlerStats.class, 0, Side.CLIENT);
+		network.registerMessage(handler, MessageDodgeStart.class, 1, Side.SERVER);
 	}
 
 	public static class Handler implements IMessageHandler<Message, Message> {

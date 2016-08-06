@@ -1,23 +1,21 @@
 package com.rwtema.minesouls;
 
 import com.rwtema.minesouls.config.DifficultyConfig;
+import com.rwtema.minesouls.playerHandler.PlayerHandler;
 import com.rwtema.minesouls.playerHandler.PlayerHandlerRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.FoodStats;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.MovementInput;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -103,5 +101,20 @@ public class MineSoulsControllerHooks {
 		}
 	}
 
+	@SideOnly(Side.CLIENT)
+	public static void handleMovementInput(MovementInput input) {
+		input.updatePlayerMoveState();
+		EntityPlayerSP thePlayer = Minecraft.getMinecraft().thePlayer;
+		if (thePlayer != null && thePlayer.movementInput == input) {
+			PlayerHandler handler = PlayerHandlerRegistry.INSTANCE.getPlayerHandler(thePlayer);
+			if (handler.dodgeTimer > 0) {
+				input.moveForward = handler.dodgeF;
+				input.moveStrafe = handler.dodgeS;
+				input.jump = false;
+				input.sneak = false;
+				thePlayer.rotationYaw = thePlayer.prevRotationYaw = handler.dodgeY;
+			}
+		}
+	}
 
 }

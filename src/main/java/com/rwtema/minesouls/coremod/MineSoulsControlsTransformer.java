@@ -31,6 +31,7 @@ public class MineSoulsControlsTransformer implements IClassTransformer {
 	Set<String> onItemUseFinish = Sets.newHashSet("onItemUseFinish", "func_77654_b");
 	Set<String> rayTrace = Sets.newHashSet("rayTrace", "func_174822_a");
 	Set<String> getMouseOver = Sets.newHashSet("getMouseOver", "func_78473_a");
+	Set<String> updatePlayerMoveState = Sets.newHashSet("updatePlayerMoveState", "func_78898_a" );
 
 	@Override
 	public byte[] transform(String s, String s1, byte[] bytes) {
@@ -74,6 +75,10 @@ public class MineSoulsControlsTransformer implements IClassTransformer {
 				onItemRightClick, null, canEat,
 				"canPlayerEat", "(Lnet/minecraft/entity/player/EntityPlayer;Z)Z"
 		);
+
+		bytes = swapMethodCalls(s, bytes, "net.minecraft.client.entity.EntityPlayerSP",
+				onLivingUpdate, null, updatePlayerMoveState,
+				"handleMovementInput", "(Lnet/minecraft/util/MovementInput;)V");
 
 
 

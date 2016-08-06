@@ -15,6 +15,7 @@ public class MessagePlayerHandlerStats extends NetworkHandler.Message {
 	public float poise;
 	public int poiseCooldown;
 	public int staggerTimer;
+
 	PlayerHandler handler;
 
 	public MessagePlayerHandlerStats() {

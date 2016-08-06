@@ -18,6 +18,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
@@ -80,7 +81,13 @@ public class PlayerHandlerRegistry {
 	}
 
 	@SubscribeEvent
-	public void attacked(LivingHurtEvent event) {
+	public void hurt(LivingHurtEvent event) {
+		if (MineSouls.isMineSoulsOnServer())
+			getPlayerHandler(event.getEntity()).ifPresent(playerHandler -> playerHandler.hurt(event));
+	}
+
+	@SubscribeEvent
+	public void attacked(LivingAttackEvent event) {
 		if (MineSouls.isMineSoulsOnServer())
 			getPlayerHandler(event.getEntity()).ifPresent(playerHandler -> playerHandler.attacked(event));
 	}
@@ -111,6 +118,16 @@ public class PlayerHandlerRegistry {
 			EntityPlayerSP thePlayer = Minecraft.getMinecraft().thePlayer;
 			if (thePlayer != null)
 				getPlayerHandler(thePlayer).clientTick();
+		}
+	}
+
+	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
+	public void renderTick(TickEvent.RenderTickEvent event) {
+		if (MineSouls.isMineSoulsOnServer()) {
+			EntityPlayerSP thePlayer = Minecraft.getMinecraft().thePlayer;
+			if (thePlayer != null)
+				getPlayerHandler(thePlayer).renderTick();
 		}
 	}
 }

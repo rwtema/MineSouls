@@ -4,10 +4,14 @@ import com.rwtema.minesouls.Helper;
 import com.rwtema.minesouls.config.DifficultyConfig;
 import com.rwtema.minesouls.network.MessagePlayerHandlerStats;
 import com.rwtema.minesouls.network.NetworkHandler;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
+import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.EnumAction;
@@ -20,6 +24,7 @@ import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -27,16 +32,20 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class PlayerHandler implements INBTSerializable<NBTTagCompound>, ICapabilityProvider {
 
+	public static final UUID dodgeID = UUID.fromString("c0dc01c8-8a4a-4ad4-af9f-2d83da0c8d6f");
 	public final EntityPlayer player;
 	public int enduranceCooldown = 0;
 	public float poise = 0;
 	public int poiseCooldown = 0;
 	public float endurance = DifficultyConfig.MAX_ENDURANCE;
 	public int staggeredTimer = 0;
+	public int dodgeTimer = 0;
+	public float dodgeF = 0;
+	public float dodgeS = 0;
+	public float dodgeY = 0;
+	public float dodgeP = 0;
 	boolean dirty = false;
-
 	boolean wasPressingLeftClick;
-
 
 	public PlayerHandler(EntityPlayer player) {
 		super();
@@ -45,17 +54,17 @@ public class PlayerHandler implements INBTSerializable<NBTTagCompound>, ICapabil
 
 	public void onJump() {
 		endurance -= DifficultyConfig.ENDURANCE_COST_PER_JUMP;
-		enduranceCooldown = (int) Math.max(enduranceCooldown, DifficultyConfig.ENDURANCE_COST_PER_JUMP / DifficultyConfig.ENDURANCE_COOLDOWN_ATTACKJUMP_MODIFIER);
+		enduranceCooldown = (int) Math.max(enduranceCooldown, DifficultyConfig.ENDURANCE_COST_PER_JUMP / DifficultyConfig.ENDURANCE_COOLDOWN_ACTION_MODIFIER);
 		dirty = true;
 		checkEndurance();
 	}
 
 	public void attackPrevent(AttackEntityEvent event) {
-		if (staggeredTimer > 0 || player.getCooledAttackStrength(1) != 1 || endurance < DifficultyConfig.ENDURANCE_COST_PER_ATTACK || enduranceCooldown > 0) {
+		if (dodgeTimer > 0 || staggeredTimer > 0 || player.getCooledAttackStrength(1) != 1 || endurance < DifficultyConfig.ENDURANCE_COST_PER_ATTACK || enduranceCooldown > 0) {
 			event.setCanceled(true);
 		} else {
 			endurance -= DifficultyConfig.ENDURANCE_COST_PER_ATTACK;
-			enduranceCooldown = (int) Math.max(enduranceCooldown, DifficultyConfig.ENDURANCE_COST_PER_ATTACK / DifficultyConfig.ENDURANCE_COOLDOWN_ATTACKJUMP_MODIFIER);
+			enduranceCooldown = (int) Math.max(enduranceCooldown, DifficultyConfig.ENDURANCE_COST_PER_ATTACK / DifficultyConfig.ENDURANCE_COOLDOWN_ACTION_MODIFIER);
 			dirty = true;
 			checkEndurance();
 		}
@@ -68,6 +77,7 @@ public class PlayerHandler implements INBTSerializable<NBTTagCompound>, ICapabil
 			staggeredTimer = 0;
 			poiseCooldown = 0;
 			enduranceCooldown = 0;
+			dodgeTimer = 0;
 			return;
 		}
 
@@ -83,12 +93,16 @@ public class PlayerHandler implements INBTSerializable<NBTTagCompound>, ICapabil
 			player.resetCooldown();
 			player.setSprinting(false);
 			staggeredTimer--;
-			if(staggeredTimer == 0){
+			if (staggeredTimer == 0) {
 				dirty = true;
 			}
 		}
 
-		if(endurance <= 0){
+		if (dodgeTimer > 0) {
+			dodgeTimer--;
+		}
+
+		if (endurance <= 0) {
 			player.setSprinting(false);
 		}
 
@@ -98,7 +112,6 @@ public class PlayerHandler implements INBTSerializable<NBTTagCompound>, ICapabil
 				enduranceCooldown = 0;
 				endurance = Math.max(endurance, DifficultyConfig.ENDURANCE_REGAIN_FROM_ZERO);
 			}
-
 
 
 		} else {
@@ -136,11 +149,20 @@ public class PlayerHandler implements INBTSerializable<NBTTagCompound>, ICapabil
 		}
 	}
 
-	public void attacked(LivingHurtEvent event) {
+	public void attacked(LivingAttackEvent event) {
+		if (dodgeTimer > 0 && !event.getSource().isUnblockable()) {
+			event.setCanceled(true);
+		}
+	}
+
+	public void hurt(LivingHurtEvent event) {
 		DamageSource source = event.getSource();
 		float amount = event.getAmount();
 
 		if (amount > 32768) return; // EEP
+
+		if (amount <= 0) return;
+
 
 		if (endurance == 0) {
 			amount *= DifficultyConfig.NO_ENDURANCE_DAMAGE_MODIFIER;
@@ -247,6 +269,8 @@ public class PlayerHandler implements INBTSerializable<NBTTagCompound>, ICapabil
 			}
 		}
 		wasPressingLeftClick = pressingLeftClick;
+
+		checkDodgeSpeed();
 	}
 
 	@Override
@@ -279,4 +303,34 @@ public class PlayerHandler implements INBTSerializable<NBTTagCompound>, ICapabil
 	public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
 		return capability == PlayerHandlerRegistry.capability ? PlayerHandlerRegistry.capability.cast(this) : null;
 	}
+
+	public void startDodge() {
+		dodgeTimer = DifficultyConfig.DODGE_TIME;
+		endurance -= DifficultyConfig.ENDURANCE_COST_PER_DODGE;
+		enduranceCooldown = (int) Math.max(enduranceCooldown, DifficultyConfig.ENDURANCE_COST_PER_DODGE / DifficultyConfig.ENDURANCE_COOLDOWN_ACTION_MODIFIER);
+		dirty = true;
+		checkDodgeSpeed();
+		checkEndurance();
+	}
+
+	public void checkDodgeSpeed() {
+		IAttributeInstance instance = player.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
+		AttributeModifier modifier = instance.getModifier(dodgeID);
+		if (dodgeTimer <= 0) {
+			if (modifier != null)
+				instance.removeModifier(modifier);
+		} else {
+			if (modifier == null)
+				instance.applyModifier(new AttributeModifier(dodgeID, "dodge", DifficultyConfig.DODGE_SPEED - 1, 2));
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	public void renderTick() {
+		if (dodgeTimer > 0) {
+			player.rotationYaw = player.prevRotationYaw = dodgeY;
+		}
+	}
+
+
 }
