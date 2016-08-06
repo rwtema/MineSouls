@@ -114,13 +114,15 @@ public class PlayerHandler implements INBTSerializable<NBTTagCompound>, ICapabil
 				}
 			}
 		}
+		checkDodgeSpeed();
 		checkEndurance();
 	}
 
 	private void checkEndurance() {
 		if (endurance <= 0) {
 			endurance = 0;
-			enduranceCooldown = DifficultyConfig.EMPTY_ENDURANCE_COOLDOWN;
+			if (enduranceCooldown == 0)
+				enduranceCooldown = Math.max(enduranceCooldown, DifficultyConfig.EMPTY_ENDURANCE_COOLDOWN);
 			player.setSprinting(false);
 		} else if (endurance > DifficultyConfig.MAX_ENDURANCE) {
 			endurance = DifficultyConfig.MAX_ENDURANCE;
