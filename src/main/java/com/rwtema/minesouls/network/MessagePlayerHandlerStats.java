@@ -1,5 +1,6 @@
 package com.rwtema.minesouls.network;
 
+import com.rwtema.minesouls.RunnableClient;
 import com.rwtema.minesouls.playerHandler.PlayerHandler;
 import com.rwtema.minesouls.playerHandler.PlayerHandlerRegistry;
 import net.minecraft.client.Minecraft;
@@ -47,14 +48,18 @@ public class MessagePlayerHandlerStats extends NetworkHandler.Message {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public NetworkHandler.Message runClient(MessageContext ctx) {
-		Minecraft.getMinecraft().addScheduledTask(() -> {
-			EntityPlayerSP thePlayer = Minecraft.getMinecraft().thePlayer;
-			PlayerHandler handler = PlayerHandlerRegistry.INSTANCE.getPlayerHandler(thePlayer);
-			handler.endurance = endurance;
-			handler.enduranceCooldown = enduranceCooldown;
-			handler.poise = poise;
-			handler.poiseCooldown = poiseCooldown;
-			handler.staggeredTimer = staggerTimer;
+		Minecraft.getMinecraft().addScheduledTask(new RunnableClient() {
+			@Override
+			@SideOnly(Side.CLIENT)
+			public void run() {
+				EntityPlayerSP thePlayer = Minecraft.getMinecraft().thePlayer;
+				PlayerHandler handler = PlayerHandlerRegistry.INSTANCE.getPlayerHandler(thePlayer);
+				handler.endurance = endurance;
+				handler.enduranceCooldown = enduranceCooldown;
+				handler.poise = poise;
+				handler.poiseCooldown = poiseCooldown;
+				handler.staggeredTimer = staggerTimer;
+			}
 		});
 		return null;
 	}
