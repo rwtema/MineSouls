@@ -50,6 +50,8 @@ public class KeyHandler {
 				EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
 				if (player == null) return;
 
+				if (!player.onGround) return;
+
 				PlayerHandler handler = PlayerHandlerRegistry.INSTANCE.getPlayerHandler(player);
 				if (handler.dodgeTimer > 0 || handler.endurance == 0) return;
 
