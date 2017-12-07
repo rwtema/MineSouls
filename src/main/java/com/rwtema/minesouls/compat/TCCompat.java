@@ -5,65 +5,68 @@ import com.google.common.collect.ImmutableList;
 import com.rwtema.minesouls.Helper;
 import java.util.Set;
 import net.minecraft.item.Item;
-import slimeknights.tconstruct.tools.TinkerTools;
+// import slimeknights.tconstruct.tools.TinkerTools;
+import slimeknights.tconstruct.tools.melee.TinkerMeleeWeapons;
+import slimeknights.tconstruct.tools.ranged.TinkerRangedWeapons;
+import slimeknights.tconstruct.tools.harvest.TinkerHarvestTools;
 
 public class TCCompat {
 	public static void init() {
 		HashMultimap<Helper.ToolType, Item> tools = HashMultimap.create();
 		tools.putAll(Helper.ToolType.SWORD, ImmutableList.of(
-				TinkerTools.cleaver,
-				TinkerTools.broadSword,
-//				TinkerTools.cutlass,
-//				TinkerTools.dagger,
-				TinkerTools.longSword,
-				TinkerTools.rapier));
+				TinkerMeleeWeapons.cleaver,
+				TinkerMeleeWeapons.broadSword,
+//				TinkerMeleeWeapons.cutlass,
+//				TinkerMeleeWeapons.dagger,
+				TinkerMeleeWeapons.longSword,
+				TinkerMeleeWeapons.rapier));
 
 		tools.putAll(Helper.ToolType.AXE, ImmutableList.of(
-//				TinkerTools.battleAxe,
-				TinkerTools.lumberAxe,
-				TinkerTools.hatchet
-//				TinkerTools.scythe
+				TinkerMeleeWeapons.battleAxe,
+				TinkerHarvestTools.lumberAxe,
+				TinkerHarvestTools.hatchet
+//				TinkerHarvestTools.scythe
 		));
 
 		tools.putAll(Helper.ToolType.PICKAXE, ImmutableList.of(
-				TinkerTools.pickaxe,
-				TinkerTools.hammer
+				TinkerHarvestTools.pickaxe,
+				TinkerHarvestTools.hammer
 		));
 
 		tools.putAll(Helper.ToolType.SHOVEL, ImmutableList.of(
-				TinkerTools.shovel,
-				TinkerTools.mattock));
+				TinkerHarvestTools.shovel,
+				TinkerHarvestTools.mattock));
 
 		tools.putAll(Helper.ToolType.HEAVYTOOL, ImmutableList.of(
-				TinkerTools.hammer,
-				TinkerTools.excavator,
-				TinkerTools.lumberAxe,
-				TinkerTools.cleaver
-//				TinkerTools.battleAxe,
-//				TinkerTools.scythe
+				TinkerHarvestTools.hammer,
+				TinkerHarvestTools.excavator,
+				TinkerHarvestTools.lumberAxe,
+				TinkerMeleeWeapons.cleaver
+//				TinkerMeleeWeapons.battleAxe,
+//				TinkerMeleeWeapons.scythe
 		));
 
 		tools.putAll(Helper.ToolType.HEAVYTOOL, ImmutableList.of(
-				TinkerTools.pickaxe,
-				TinkerTools.shovel,
-				TinkerTools.hatchet,
-				TinkerTools.mattock,
-				TinkerTools.broadSword,
-				TinkerTools.longSword,
-				TinkerTools.rapier,
-//				TinkerTools.cutlass,
-//				TinkerTools.dagger,
-				TinkerTools.fryPan,
-				TinkerTools.battleSign,
+				TinkerHarvestTools.pickaxe,
+				TinkerHarvestTools.shovel,
+				TinkerHarvestTools.hatchet,
+				TinkerHarvestTools.mattock,
+				TinkerMeleeWeapons.broadSword,
+				TinkerMeleeWeapons.longSword,
+				TinkerMeleeWeapons.rapier,
+//				TinkerMeleeWeapons.cutlass,
+//				TinkerMeleeWeapons.dagger,
+				TinkerMeleeWeapons.fryPan,
+				TinkerMeleeWeapons.battleSign,
 
-				TinkerTools.hammer,
-				TinkerTools.excavator,
-				TinkerTools.lumberAxe,
-				TinkerTools.cleaver,
-//				TinkerTools.battleAxe,
-//				TinkerTools.scythe,
+				TinkerHarvestTools.hammer,
+				TinkerHarvestTools.excavator,
+				TinkerHarvestTools.lumberAxe,
+				TinkerMeleeWeapons.cleaver,
+//				TinkerMeleeWeapons.battleAxe,
+//				TinkerHarvestTools.scythe,
 
-				TinkerTools.shuriken
+				TinkerRangedWeapons.shuriken
 		));
 
 		for (Helper.ToolType type : Helper.ToolType.values()) {
